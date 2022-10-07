@@ -1,0 +1,9 @@
+.vscode
+.DS_Store
+*.ignore
+.ccls-cache
+.env
+*.wiki
+true
+subject.pdf
+resources/
