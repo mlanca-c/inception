@@ -109,8 +109,9 @@ DOCKER	:= docker
 
 # Docker Compose
 COMPOSE			:= docker-compose
-COMPOSE_UP		:= ${COMPOSE} --project-directory ${SRC_ROOT} up
+COMPOSE_UP		:= ${COMPOSE} --project-directory ${SRC_ROOT} up -d
 COMPOSE_DOWN	:= ${COMPOSE} --project-directory ${SRC_ROOT} down --rmi all
+COMPOSE_LOGS	:= ${COMPOSE} --project-directory ${SRC_ROOT} logs --follow
 
 # **************************************************************************** #
 # Conditions
@@ -137,19 +138,24 @@ endif
 # Project Targets
 # **************************************************************************** #
 
-all: up
+all: up_detach
 
 #TODO: when delivering the projec, replace this line for the other.
 #${COMPOSE_UP} && ${MAKE} hosts_up || ${PRINT} "${_FAILURE} ${COMPOSE} failed";
+
 up: volumes
 	${AT} \
 	if [ ! -f ${SRC_ROOT}.env ]; then \
 		${PRINT} "${_FAILURE} no srcs/.env file found\n"; \
 	else \
 		source ${SRC_ROOT}.env; \
-		${COMPOSE_UP} || ${PRINT} "${_FAILURE} ${COMPOSE} failed"; \
+		${COMPOSE_UP} && ${MAKE} hosts_up && ${COMPOSE_LOGS} \
+		|| ${PRINT} "${_FAILURE} ${COMPOSE} failed"; \
 	fi \
 	${BLOCK}
+
+up_detach: COMPOSE_LOGS="true"
+up_detach: up
 
 down: hosts_down
 	${AT} ${COMPOSE_DOWN} ${BLOCK}
@@ -176,6 +182,15 @@ clean_volumes_folder: ;
 clean_networks: ;
 	$(foreach net,${NET_NAMES_LIST},$(call make_clean_network,${net}))
 
+clean_all: _clean_all status
+
+_clean_all:
+	${AT} ${DOCKER} stop `docker ps -qa` || true ${BLOCK}
+	${AT} ${DOCKER} rm `docker ps -qa` || true ${BLOCK}
+	${AT} ${DOCKER} rmi -f `docker images -qa` || true ${BLOCK}
+	${AT} ${DOCKER} volume rm `docker volume ls -q` || true ${BLOCK}
+	${AT} ${DOCKER} network rm `docker network ls -q` || true ${BLOCK}
+
 # **************************************************************************** #
 # Other Project Targets
 # **************************************************************************** #
@@ -195,18 +210,23 @@ status:
 	${AT} ${DOCKER} network ls --format "{{.Name}}: {{.ID}}" \
 		--filter type=custom ${BLOCK}
 
-test_TLSv1.2:
-	${AT} bash ${TOOLS_ROOT}test_certs.sh ${BLOCK}
+container_logs:
+	${AT}  ${BLOCK}
 
-hosts_re: hosts_down hosts_up
+hosts_check: 
+	${AT} sudo bash ${TOOLS_ROOT}host_config.sh check && \
+	${PRINT} "${_SUCCESS} hosts were successfully configured in /etc/hosts\n" || \
+	${PRINT} "${_FAILURE} hosts are not configured in /etc/hosts\n" ${BLOCK}
+
+hosts_re: hosts_check hosts_down hosts_up hosts_check
 
 hosts_up:
-	${AT} sudo bash ${TOOLS_ROOT}host_config.sh up ${BLOCK}
-	${AT} ${PRINT} "${_SUCCESS} host configured in /etc/hosts\n" ${BLOCK}
+	${AT} sudo bash ${TOOLS_ROOT}host_config.sh up && \
+	${PRINT} "${_SUCCESS} host configured in /etc/hosts\n" ${BLOCK}
 
 hosts_down:
-	${AT} sudo bash ${TOOLS_ROOT}host_config.sh down ${BLOCK}
-	${AT} ${PRINT} "${_SUCCESS} host disconfigured in /etc/hosts\n" ${BLOCK}
+	${AT} sudo bash ${TOOLS_ROOT}host_config.sh down && \
+	${PRINT} "${_SUCCESS} host disconfigured in /etc/hosts\n" ${BLOCK}
 
 # **************************************************************************** #
 # Debug Targets
@@ -220,10 +240,13 @@ print-%: ;
 # **************************************************************************** #
 
 # Phony execution targets
-.PHONY: all up down
+.PHONY: all up down up_detach
 
 # Phony other execution targets
-.PHONY: status volumes test_TLSv1
+.PHONY: status volumes
+
+# Phony host targets
+.PHONY: hosts_check hosts_re hosts_up hosts_down
 
 # Phony clean targets
 .PHONY: clean fclean re
@@ -232,7 +255,7 @@ print-%: ;
 .PHONY: %-print
 
 # Phony docker clean targets
-.PHONY: clean_images clean_volumes clean_networks
+.PHONY: clean_images clean_volumes clean_networks clean_all _clean_all
 
 # **************************************************************************** #
 # Constantes
@@ -284,7 +307,8 @@ endef
 
 define make_clean_volume
 (docker volume rm ${1} && \
-	${PRINT} "${_SUCCESS} ${1} volume removed\n");
+	${PRINT} "${_SUCCESS} ${1} volume removed\n") || \
+	${PRINT} "${_FAILURE} ${1} volume couldn't be removed\n";
 endef
 
 define make_clean_network
