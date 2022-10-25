@@ -140,9 +140,6 @@ endif
 
 all: up_detach
 
-#TODO: when delivering the projec, replace this line for the other.
-#${COMPOSE_UP} && ${MAKE} hosts_up || ${PRINT} "${_FAILURE} ${COMPOSE} failed";
-
 up: volumes
 	${AT} \
 	if [ ! -f ${SRC_ROOT}.env ]; then \
@@ -171,16 +168,16 @@ fclean: clean clean_volumes_folder clean_volumes clean_networks
 re: fclean all
 
 clean_images: ;
-	$(foreach img,${IMG_NAMES_LIST},$(call make_clean_img,${img}))
+	${AT}$(foreach img,${IMG_NAMES_LIST},$(call make_clean_img,${img}))${BLOCK}
 
 clean_volumes: ;
-	$(foreach vol,${VOL_NAMES_LIST},$(call make_clean_volume,${vol}))
+	${AT}$(foreach vol,${VOL_NAMES_LIST},$(call make_clean_volume,${vol}))${BLOCK}
 
 clean_volumes_folder: ;
-	$(foreach vol,${VOL_NAMES_LIST},$(call make_clean_volume_folder,${vol}))
+	${AT}$(foreach vol,${VOL_NAMES_LIST},$(call make_clean_volume_folder,${vol}))${BLOCK}
 
 clean_networks: ;
-	$(foreach net,${NET_NAMES_LIST},$(call make_clean_network,${net}))
+	${AT}$(foreach net,${NET_NAMES_LIST},$(call make_clean_network,${net}))${BLOCK}
 
 clean_all: _clean_all status
 
@@ -199,14 +196,14 @@ volumes: ;
 	$(foreach vol,${VOL_NAMES_LIST},$(call make_create_volume,${vol}))
 
 status:
-	${AT} ${PRINT} "${_INFO} containers:\n" ${BLOCK}
+	${AT} ${PRINT} "containers:\n" ${BLOCK}
 	${AT} ${DOCKER} container ls --format "{{.Names}}: {{.ID}}" ${BLOCK}
-	${AT} ${PRINT} "${_INFO} images:\n" ${BLOCK}
+	${AT} ${PRINT} "images:\n" ${BLOCK}
 	${AT} ${DOCKER} images --format "{{.Repository}}: {{.ID}}" || \
 		${DOCKER} images --format "{{.Name}}: {{.ID}}" ${BLOCK}
-	${AT} ${PRINT} "${_INFO} volumes:\n" ${BLOCK}
+	${AT} ${PRINT} "volumes:\n" ${BLOCK}
 	${AT} ${DOCKER} volume ls --format "{{.Name}}: {{.Driver}}" ${BLOCK}
-	${AT} ${PRINT} "${_INFO} networks:\n" ${BLOCK}
+	${AT} ${PRINT} "networks:\n" ${BLOCK}
 	${AT} ${DOCKER} network ls --format "{{.Name}}: {{.ID}}" \
 		--filter type=custom ${BLOCK}
 
@@ -258,7 +255,7 @@ print-%: ;
 .PHONY: clean_images clean_volumes clean_networks clean_all _clean_all
 
 # **************************************************************************** #
-# Constantes
+# Constants
 # **************************************************************************** #
 
 NULL			=

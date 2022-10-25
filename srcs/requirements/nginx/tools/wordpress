@@ -1,0 +1,35 @@
+server {
+
+	# SSL configuration
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+    ssl_certificate /etc/nginx/certs/selfsigned.crt;
+    ssl_certificate_key /etc/nginx/certs/selfsigned.key;
+
+    ssl_protocols       TLSv1.2;
+
+	root /var/www/wordpress;
+
+	index index.php index.html index.htm index.nginx-debian.html;
+
+	server_name mlanca-c.42.fr;
+	# server_name www.mlanca-c.42.fr;
+	# server_name https://www.mlanca-c.42.fr;
+	# server_name https://mlanca-c.42.fr;
+
+	location / {
+		autoindex on;
+		try_files $uri $uri/ /index.php?$args;
+	}
+
+	location ~ \.php$ {
+		root /var/www/wordpress/;
+		include fastcgi_params;
+		try_files $uri $uri/ /index.php;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		fastcgi_pass localhost:9000;
+		fastcgi_param SCRIPT_FILENAME	$document_root$fastcgi_script_name;
+		fastcgi_param QUERY_STRING	$query_string;
+	}
+}
