@@ -1,18 +1,17 @@
 # **************************************************************************** #
-# 
-# srcs/requirements/nginx/Dockerfile
-# 
-# Author: mlanca-c
+#
+# nginx/Dockerfile
+#
+# user: mlanca-c
 # URL: https://github.com/mlanca-c/inception
-# Description: dockerfile that will create the image of NGINX service.
+# description: this file composes the docker image of nginx
 # **************************************************************************** #
 
-# creating a image layer for the OS
+# creating a base OS image
 FROM debian:10.12
 
-# updating the OS
+# updating OS
 RUN apt update -y
-# RUN apt upgrade -y
 
 # installing nginx
 RUN apt install -y nginx
@@ -21,22 +20,22 @@ RUN apt install -y openssl
 # installing vim
 RUN apt install -y vim
 
-# creating directory where ssl certs will be stored
-RUN mkdir -p /etc/nginx/certs/
-RUN chmod 700 /etc/nginx/certs/
-# generating certificate and private key
-RUN openssl req \
-			-nodes \
-			-newkey rsa:2048 \
-			-x509 \
-			-days 365 \
-			-out /etc/nginx/certs/selfsigned.crt \
-			-keyout /etc/nginx/certs/selfsigned.key \
-    		-subj "/C=PT/ST=Lisboa/L=Lisboa/O=42Lisboa/OU=Inception/CN=www.mlanca-c.42.fr"
-
-# configuring nginx
+# create server root dir
 RUN mkdir -p /var/www/wordpress
-COPY ./tools/wordpress /etc/nginx/sites-available/default
+COPY ./tools/info.php /var/www/wordpress/
 
-# starting nginx service
-CMD [ "nginx", "-g", "daemon off;" ]
+# adding wordpress server config file in sites-available
+COPY ./tools/wordpress /etc/nginx/sites-available/
+RUN ln -s /etc/nginx/sites-available/wordpress /etc/nginx/sites-enabled/
+
+# generating self signed certificate and key
+RUN openssl req \
+	-x509 \
+	-nodes \
+	-days 365 \
+	-newkey rsa:2048 \
+	-keyout /etc/ssl/private/nginx-selfsigned.key \
+	-out /etc/ssl/certs/nginx-selfsigned.crt \
+	-subj "/C=PT/ST=Lisboa/L=Lisboa/O=42Lisboa/OU=Inception/CN=www.mlanca-c.42.fr"
+
+CMD ["nginx", "-g", "daemon off;"]

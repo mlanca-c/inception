@@ -1,32 +1,21 @@
 # **************************************************************************** #
-# 
-# srcs/requirements/wordpress/Dockerfile
-# 
-# Author: mlanca-c
+#
+# wordpress/Dockerfile
+#
+# user: mlanca-c
 # URL: https://github.com/mlanca-c/inception
-# Description: dockerfile that will create the image of WordPress service.
+# description: this file composes the docker image of nginx
 # **************************************************************************** #
 
-# creating a image layer for the OS
+# creating a base OS image
 FROM debian:10.12
 
-# updating the OS
+# updating OS
 RUN apt update -y
-# RUN apt upgrade -y
 
-# # installing curl
-# RUN apt install -y curl
-# installing php and recommended extensions
+# installing nginx
 RUN apt install -y php7.3 \
 				   php7.3-fpm
+
 # installing vim
 RUN apt install -y vim
-
-# configuring php
-
-# configuring wordpress
-
-# starting php-fpm service
-RUN service php7.3-fpm start
-RUN service php7.3-fpm stop
-CMD [ "php-fpm7.3", "-F", "-R" ]
