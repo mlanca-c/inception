@@ -55,10 +55,8 @@ services:
     # fails
     restart: on-failure
     # Setting environment variables of container from .env file
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - ".env"
     # app network
     networks:
       - inception-network
@@ -80,11 +78,8 @@ services:
     # fails
     restart: on-failure
     # Setting environment variables of container from .env file
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: ${DB_HOST}
+    env_file:
+      - ".env"
     # this docker container will depend on other containers
     depends_on:
       - mariadb
