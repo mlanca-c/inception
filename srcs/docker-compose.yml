@@ -10,6 +10,8 @@
 # docker-compose version set to the latest, default being 1
 version: '3.8'
 
+# project_name: inception
+
 # List of services (containers)
 services:
   # nginx container
@@ -27,17 +29,42 @@ services:
       - "443:443"
     # restart is set to on-failure, this way the container only restarts if it
     # fails
-    # restart: on-failure
+    restart: on-failure
     # app network
     networks:
       - inception-network
     # this docker container will depend on other containers
     depends_on:
       - wordpress
-      # - mariadb
+      - mariadb
     # mounting local filesystems inside container
     volumes:
       - wordpress-volume:/var/www/wordpress
+
+  # mariadb container
+  mariadb:
+    # name of the container
+    container_name: mariadb
+    # name of the image (syntax: name[:tag])
+    image: mariadb:prod
+    # build section. This regards the image of the container
+    build: 
+      # location of the Dockerfile
+      context: ./requirements/mariadb/.
+    # restart is set to on-failure, this way the container only restarts if it
+    # fails
+    restart: on-failure
+    # Setting environment variables of container from .env file
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    # app network
+    networks:
+      - inception-network
+    # mounting local filesystems inside container
+    volumes:
+      - mariadb-volume:/var/lib/mysql/
 
   # wordpress container
   wordpress:
@@ -49,21 +76,18 @@ services:
     build:
       # location of the Dockerfile
       context: ./requirements/wordpress/.
-    # exposing port only for containers connected to the same network
-    # expose:
-    #   - "9000"
     # restart is set to on-failure, this way the container only restarts if it
     # fails
     restart: on-failure
     # Setting environment variables of container from .env file
-    # environment:
-    #   DB_NAME: ${DB_NAME}
-    #   DB_USER: ${DB_USER}
-    #   DB_PASSWORD: ${DB_PASSWORD}
-    #   DB_HOST: ${DB_HOST}
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
     # this docker container will depend on other containers
-    # depends_on:
-    #   - mariadb
+    depends_on:
+      - mariadb
     # app network
     networks:
       - inception-network
@@ -71,6 +95,7 @@ services:
     volumes:
       - wordpress-volume:/var/www/wordpress
 
+# TODO: change volumes folders
 volumes:
 
   wordpress-volume:
@@ -80,6 +105,14 @@ volumes:
       type: none
       o: bind
       device: /home/mlancac/data/wordpress-volume
+
+  mariadb-volume:
+    name: mariadb-volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mlancac/data/mariadb-volume
 
 # app network
 networks:

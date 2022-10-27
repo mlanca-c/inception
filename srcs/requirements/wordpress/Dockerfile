@@ -26,7 +26,7 @@ COPY ./tools/www.conf /etc/php/7.3/fpm/pool.d/www.conf
 
 # create server root dir
 RUN mkdir -p /var/www/wordpress
-COPY ./tools/info.php /var/www/wordpress/
+COPY ./tools/todo_list.php /var/www/wordpress/
 
 # starting php-fpm service
 RUN service php7.3-fpm start
