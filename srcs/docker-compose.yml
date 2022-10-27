@@ -34,10 +34,42 @@ services:
     # this docker container will depend on other containers
     depends_on:
       - wordpress
-      - mariadb
+      # - mariadb
     # mounting local filesystems inside container
     volumes:
-      - wordpress-volume:/var/www/html
+      - wordpress-volume:/var/www/wordpress
+
+  # wordpress container
+  wordpress:
+    # name of the container
+    container_name: wordpress
+    # name of the image (syntax: name[:tag])
+    image: wordpress:prod
+    # build section. This regards the image of the container
+    build:
+      # location of the Dockerfile
+      context: ./requirements/wordpress/.
+    # exposing port only for containers connected to the same network
+    # expose:
+    #   - "9000"
+    # restart is set to on-failure, this way the container only restarts if it
+    # fails
+    restart: on-failure
+    # Setting environment variables of container from .env file
+    # environment:
+    #   DB_NAME: ${DB_NAME}
+    #   DB_USER: ${DB_USER}
+    #   DB_PASSWORD: ${DB_PASSWORD}
+    #   DB_HOST: ${DB_HOST}
+    # this docker container will depend on other containers
+    # depends_on:
+    #   - mariadb
+    # app network
+    networks:
+      - inception-network
+    # mounting local filesystems inside container
+    volumes:
+      - wordpress-volume:/var/www/wordpress
 
 volumes:
 

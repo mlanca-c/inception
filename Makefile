@@ -154,7 +154,8 @@ up: volumes
 up_detach: COMPOSE_LOGS="true"
 up_detach: up
 
-down: hosts_down
+# down: hosts_down
+down:
 	${AT} ${COMPOSE_DOWN} ${BLOCK}
 
 # **************************************************************************** #
@@ -211,19 +212,19 @@ container_logs:
 	${AT}  ${BLOCK}
 
 hosts_check: 
-	${AT} sudo bash ${TOOLS_ROOT}host_config.sh check && \
-	${PRINT} "${_SUCCESS} hosts were successfully configured in /etc/hosts\n" || \
-	${PRINT} "${_FAILURE} hosts are not configured in /etc/hosts\n" ${BLOCK}
+	# ${AT} sudo bash ${TOOLS_ROOT}host_config.sh check && \
+	# ${PRINT} "${_SUCCESS} hosts were successfully configured in /etc/hosts\n" || \
+	# ${PRINT} "${_FAILURE} hosts are not configured in /etc/hosts\n" ${BLOCK}
 
 hosts_re: hosts_check hosts_down hosts_up hosts_check
 
 hosts_up:
-	${AT} sudo bash ${TOOLS_ROOT}host_config.sh up && \
-	${PRINT} "${_SUCCESS} host configured in /etc/hosts\n" ${BLOCK}
+	# ${AT} sudo bash ${TOOLS_ROOT}host_config.sh up && \
+	# ${PRINT} "${_SUCCESS} host configured in /etc/hosts\n" ${BLOCK}
 
 hosts_down:
-	${AT} sudo bash ${TOOLS_ROOT}host_config.sh down && \
-	${PRINT} "${_SUCCESS} host disconfigured in /etc/hosts\n" ${BLOCK}
+	# ${AT} sudo bash ${TOOLS_ROOT}host_config.sh down && \
+	# ${PRINT} "${_SUCCESS} host disconfigured in /etc/hosts\n" ${BLOCK}
 
 # **************************************************************************** #
 # Debug Targets

@@ -22,7 +22,6 @@ RUN apt install -y vim
 
 # create server root dir
 RUN mkdir -p /var/www/wordpress
-COPY ./tools/info.php /var/www/wordpress/
 
 # adding wordpress server config file in sites-available
 COPY ./tools/wordpress /etc/nginx/sites-available/
