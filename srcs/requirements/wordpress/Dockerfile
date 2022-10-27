@@ -18,6 +18,8 @@ RUN apt update -y
 RUN apt install -y php7.3 \
                    php7.3-fpm \
                    php7.3-mysql
+# installing netcat
+RUN apt install -y netcat
 # installing vim
 RUN apt install -y vim
 
@@ -28,7 +30,8 @@ COPY ./tools/www.conf /etc/php/7.3/fpm/pool.d/www.conf
 RUN mkdir -p /var/www/wordpress
 COPY ./tools/todo_list.php /var/www/wordpress/
 
+# copying wordpress-setup.sh to the container
+COPY ./tools/wordpress-setup.sh /tmp/
+
 # starting php-fpm service
-RUN service php7.3-fpm start
-RUN service php7.3-fpm stop
-CMD ["php-fpm7.3", "-F", "-R"]
+CMD ["/bin/bash", "/tmp/wordpress-setup.sh"]
