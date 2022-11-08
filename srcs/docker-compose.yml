@@ -35,7 +35,7 @@ services:
       - inception-network
     # this docker container will depend on other containers
     depends_on:
-      # - wordpress
+      - wordpress
       - mariadb
     # mounting local filesystems inside container
     volumes:

@@ -53,4 +53,4 @@ COPY ./tools/wp-config.php /tmp/
 # copying wordpress-setup.sh to the container
 COPY ./tools/wordpress-setup.sh /tmp/
 
-CMD ["/bin/bash", "/tmp/wordpress-setup.sh", "--verbose"]
+CMD ["/bin/bash", "/tmp/wordpress-setup.sh"]
