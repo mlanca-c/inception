@@ -109,8 +109,9 @@ DOCKER	:= docker
 
 # Docker Compose
 COMPOSE			:= docker-compose
-COMPOSE_UP		:= ${COMPOSE} --project-directory ${SRC_ROOT} up -d
-COMPOSE_DOWN	:= ${COMPOSE} --project-directory ${SRC_ROOT} down --rmi all
+COMPOSE_UP		:= ${COMPOSE} --project-directory ${SRC_ROOT} --project-name \
+					inception up -d 
+COMPOSE_DOWN	:= ${COMPOSE} --project-directory ${SRC_ROOT} down
 COMPOSE_LOGS	:= ${COMPOSE} --project-directory ${SRC_ROOT} logs --follow
 
 # **************************************************************************** #
@@ -209,7 +210,7 @@ status:
 		--filter type=custom ${BLOCK}
 
 container_logs:
-	${AT} cd ${SRC_ROOT}; ${COMPOSE} logs -f ${BLOCK}
+	${AT} ${COMPOSE_LOGS} ${BLOCK}
 
 hosts_check: ;
 
