@@ -1,0 +1,115 @@
+# **************************************************************************** #
+#
+# docker-compose.yml
+#
+# user: mlanca-c
+# URL: https://github.com/mlanca-c/inception
+# description: this file defines and runs multiple container applications
+# **************************************************************************** #
+
+# docker-compose version set to the latest, default being 1
+version: '3.8'
+
+# project_name: inception
+
+# List of services (containers)
+services:
+  # nginx container
+  nginx:
+    # name of the container
+    container_name: nginx
+    # name of the image (syntax: name[:tag])
+    image: nginx:prod
+    # build section. This regards the image of the container
+    build:
+      # location of the Dockerfile
+      context: ./requirements/nginx/.
+    # port to be accessed outside of docker network (syntax: HOST:CONTAINER)
+    ports:
+      - "443:443"
+    # restart is set to on-failure, this way the container only restarts if it
+    # fails
+    restart: on-failure
+    # app network
+    networks:
+      - inception-network
+    # this docker container will depend on other containers
+    depends_on:
+      - wordpress
+      - mariadb
+    # mounting local filesystems inside container
+    volumes:
+      - wordpress-volume:/var/www/wordpress
+
+  # mariadb container
+  mariadb:
+    # name of the container
+    container_name: mariadb
+    # name of the image (syntax: name[:tag])
+    image: mariadb:prod
+    # build section. This regards the image of the container
+    build: 
+      # location of the Dockerfile
+      context: ./requirements/mariadb/.
+    # restart is set to on-failure, this way the container only restarts if it
+    # fails
+    restart: on-failure
+    # Setting environment variables of container from .env file
+    env_file:
+      - ".env"
+    # app network
+    networks:
+      - inception-network
+    # mounting local filesystems inside container
+    volumes:
+      - mariadb-volume:/var/lib/mysql/
+
+  # wordpress container
+  wordpress:
+    # name of the container
+    container_name: wordpress
+    # name of the image (syntax: name[:tag])
+    image: wordpress:prod
+    # build section. This regards the image of the container
+    build:
+      # location of the Dockerfile
+      context: ./requirements/wordpress/.
+    # restart is set to on-failure, this way the container only restarts if it
+    # fails
+    restart: on-failure
+    # Setting environment variables of container from .env file
+    env_file:
+      - ".env"
+    # this docker container will depend on other containers
+    depends_on:
+      - mariadb
+    # app network
+    networks:
+      - inception-network
+    # mounting local filesystems inside container
+    volumes:
+      - wordpress-volume:/var/www/wordpress
+
+# TODO: change volumes folders
+volumes:
+
+  wordpress-volume:
+    name: wordpress-volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mlancac/data/wordpress-volume
+
+  mariadb-volume:
+    name: mariadb-volume
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/mlancac/data/mariadb-volume
+
+# app network
+networks:
+  inception-network:
+    name: inception-network
